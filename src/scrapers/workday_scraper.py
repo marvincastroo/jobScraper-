@@ -4,11 +4,11 @@ from webdriver_manager.chrome import ChromeDriverManager
 from selenium.webdriver.chrome.options import Options as ChromeOptions
 from selenium.webdriver.common.by import By
 from bs4 import BeautifulSoup
-from .base_scraper import BaseScraper  # Import the base class
+from src.scrapers.base_scraper import BaseScraper  # Import the base class
 import time
 
 
-class LinkedInScraper(BaseScraper):
+class WorkdayScraper(BaseScraper):
 
     def __init__(self, url, headers=None):
         super().__init__(url, headers)
@@ -39,6 +39,7 @@ class LinkedInScraper(BaseScraper):
             soup = BeautifulSoup(rendered_html, 'html.parser')
             with open("file.html", "w", encoding="utf-8") as f:
                 f.write(soup.prettify())
+
             return self._parse_content(soup)
         except Exception as e:
             print(f"Error scraping LinkedIn URL '{self.url}': {e}")
@@ -50,26 +51,50 @@ class LinkedInScraper(BaseScraper):
         """Parses the relevant information from the BeautifulSoup object."""
         data = {}
 
-        # data = {"url": self.url}
-        # Example: Extract job title (you'll need to inspect the actual HTML)
-        title_element = soup.select_one('h1')
-        # data["title"] = title_element.text.strip() if title_element else None
+        about_role = soup.find('p', style='text-align:left', string="About the Role")
+        # about_role_text = ""
+        if about_role:
+            next_s = about_role.next_sibling
+            if next_s:
+                next_child = next_s.next_element
+                next_child_text = next_child.getText()
+                data["about_role"] = next_child_text
 
-        # Example: Extract job description (you'll need to inspect the actual HTML)
-        description_element = soup.find('div', {'class': 'show-more-less-html__markup'})
-        data["description"] = description_element.get_text(separator='\n').strip() if description_element else None
+        responsibilities_heading = soup.find('b',  string="Responsibilities")
+        if responsibilities_heading:
+            ul_element = responsibilities_heading.find_parent().next_sibling
+            if ul_element:
+                data["responsibilities"] = ul_element.getText()
+
+        requirements = soup.find('b', string = "About You")
+        if requirements:
+            basic_requirements = requirements.find_parent().next_sibling.next_sibling
+            if basic_requirements:
+                basic_req = basic_requirements.next_sibling
+                if basic_req:
+                    data["requirements"] = basic_req.getText()
+            # other_requirements
+
+
+
+
+
+
+
+
 
         return data
 
 
 if __name__ == "__main__":
-    url = "https://www.linkedin.com/jobs/view/4221009877/"
-    scraper = LinkedInScraper(url=url)
+    url = "https://workday.wd5.myworkdayjobs.com/Workday/job/Costa-Rica/Salesforce-Business-Systems-Analyst--Global-Customer-Support-_JR-0096614"
+    scraper = WorkdayScraper(url=url)
     data = scraper.parse()
     if data:
         print("Extracted data:")
         # print(f"Title: {data.get("Title")}")
-        print(f"Description: {data.get("description")}")
+        print(data)
+        print(f"Description: {data.get("responsibilities")}")
         # save_data(data, f"data/{platform}_job_{job_urls.index(url)}.json")
     else:
         print(f"Failed to extract data from: {url}")
