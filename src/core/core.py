@@ -13,7 +13,7 @@ from src.scrapers.workday_scraper import WorkdayScraper
 from src.core.assess_profile import assess_user
 from src.core.generate_resume import generate_resume
 from src.core.save_results import save_results
-from settings import FILTER_JOBS_KEYWORDS, JOB_TYPE_TARGETS
+from settings import FILTER_JOBS_KEYWORDS, JOB_TYPE_TARGETS, FILTER_COMPANIES
 load_dotenv()
 
 TELEGRAM_API_ID = int(os.getenv('app_api_id'))
@@ -38,10 +38,32 @@ def scraper_classifier(job_details):
     return
 
 
-def job_picker(job_data, jobs_to_filter, jobs_user_wants):
+def check_job_in_results(job_data):
+    """
+    Checks the existence of a duplicate in the output folder. If there is a duplicate (job title + company name) the
+    loop is exited.
+    :param job_data:
+    :return:
+    """
+    job_title = job_data['title']
+    job_company = job_data['company']
+    directory_name = (job_title + job_company).lower()
+    directory_name = directory_name.replace(" ", "_")
+    directory_name = re.sub(r'[^a-z0-9_\-]', '', directory_name)
+    if os.path.exists("../../output/" + directory_name):
+        print(f"Job posting already exists in results folder output/{directory_name}")
+        return True
+    else:
+        return False
+
+def job_picker(job_data, jobs_to_filter, jobs_user_wants, companies_to_filter):
     for job in jobs_to_filter:
         if job.lower() in job_data['title'].lower():
             return False
+    for company in companies_to_filter:
+        if company.lower() in job_data['company'].lower():
+            return False
+
     sys_prompt = get_prompt_template_from_jinja2(prompt_path='../prompts',
                                                  prompt_name='sys_initial_job_filter.txt')
     user_prompt = get_prompt_template_from_jinja2(prompt_path='../prompts',
@@ -110,28 +132,36 @@ async def main():
         if message.id != last_message_id:
             last_message_id = message.id
             test_message = """
-                🧑‍💼  |  Responsible AI Data Scientist
-
-                Empresa: Latinx in AI (LXAI)
-                Ubicación: Costa Rica (On-site)
-                Tags: #data
-
-                https://www.linkedin.com/jobs/view/4225833956
+            🧑‍💼  |  Technical Support Engineer - UX
+            
+            Empresa: Recruiter
+            Ubicación: Heredia, Heredia, Costa Rica (Hybrid)
+            Tags: #soporte
+            
+            https://www.linkedin.com/jobs/view/4228542522
             """
             print("Last message:", message.message)
-            # job_posting_data = message_regex(history.messages[0].message)
+            # job_posting_data = message_regex(message.message)
             job_posting_data = message_regex(test_message)
-            chosen_job = job_picker(job_data=job_posting_data,
-                                    jobs_to_filter=FILTER_JOBS_KEYWORDS,
-                                    jobs_user_wants=JOB_TYPE_TARGETS)
+            entry_already_exists = check_job_in_results(job_posting_data)
+
+            if not entry_already_exists:
+                chosen_job = job_picker(job_data=job_posting_data,
+                                        jobs_to_filter=FILTER_JOBS_KEYWORDS,
+                                        jobs_user_wants=JOB_TYPE_TARGETS,
+                                        companies_to_filter=FILTER_COMPANIES)
+            else:
+                chosen_job = False
+
             if chosen_job:
                 data = scraper_classifier(job_posting_data)
-                result = assess_user(data)
-                print(result)
+                user_assessment_result = assess_user(data)
+                print(user_assessment_result)
                 generated_cv = generate_resume(data)
                 save_results(job_title=job_posting_data['title'],
                              job_company=job_posting_data['company'],
-                             resume=generated_cv)
+                             resume=generated_cv,
+                             user_assessment=user_assessment_result)
 
             else:
                 print("Job is not a good fit. ")
