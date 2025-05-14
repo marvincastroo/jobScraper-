@@ -1,0 +1,3 @@
+The job posting title is: {{job_title}},
+the user is interested in {{job_preferences}}
+the user is NOT interested in {{job_filters}}

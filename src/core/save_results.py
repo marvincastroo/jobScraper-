@@ -14,9 +14,9 @@ def save_results(job_title, job_company, resume, user_assessment):
         file.write(resume)
 
     print(f"File created at ../../output/" + directory_name + '/main.tex')
-    time.sleep(60)
+    time.sleep(10)
     print(f"Compiling latex...")
-    file = compile_latex('main.tex', "../../output/" + directory_name)
+    file = compile_latex_system('main.tex', "../../output/" + directory_name)
     cleanup_latex_files("../../output/" + directory_name)
 
     output_user_assessment(user_assessment, "../../output/" + directory_name)
@@ -66,6 +66,24 @@ def compile_latex(latex_file, latex_directory):
     except Exception as e:
         print(f"An unexpected error occurred: {e}")
         return None
+
+
+def compile_latex_system(latex_file, latex_directory):
+    if os.path.exists(os.path.join(latex_directory, latex_file)):
+        if os.name == 'nt':  # Windows
+            null_device = 'NUL'
+        else:  # Unix-like
+            null_device = '/dev/null'
+
+        command = f"cd \"{latex_directory}\" && pdflatex -interaction=nonstopmode \"{latex_file}\" > {null_device} 2>&1"
+        return_code = os.system(command)
+
+        if return_code == 0:
+            print(f"Successfully compiled '{latex_file}' in '{latex_directory}'")
+        else:
+            print(f"Error compiling '{latex_file}' in '{latex_directory}' (return code: {return_code})")
+    else:
+        print(f"Error: LaTeX file '{latex_file}' not found in '{latex_directory}'.")
 
 def cleanup_latex_files(directory):
     """

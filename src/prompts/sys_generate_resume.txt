@@ -1,0 +1,6 @@
+Your job is to generate a resume based on the user's profile and experience, and the job posting description.
+Select the user's information that will enhance his odds to get an interview, or that will make his resume
+more appealing for that job in specific. Use only the information given to you. You will generate a latex file (.tex) as
+output.
+
+Use the following latex format: {{ latex_format }}

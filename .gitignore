@@ -1,0 +1,5 @@
+.idea/
+.env
+test.session
+src/core/test.session
+src/core/test.session-journal

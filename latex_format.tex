@@ -1,0 +1,103 @@
+\documentclass[11pt]{article}
+\usepackage[letterpaper,
+top=0.5in,
+bottom=0.5in,
+left=0.5in,
+right=0.5in]{geometry}
+
+\usepackage{XCharter}
+\usepackage[T1]{fontenc}
+\usepackage[utf8]{inputenc}
+\usepackage{enumitem}
+\usepackage[hidelinks]{hyperref}
+\usepackage{titlesec}
+\raggedright
+\pagestyle{empty}
+
+
+\input{glyphtounicode}
+\pdfgentounicode=1
+
+
+\titleformat{\section}{\bfseries\large}{}{0pt}{}[\vspace{1pt}\titlerule\vspace{-6.5pt}]
+
+
+\renewcommand\labelitemi{$\vcenter{\hbox{\small$\bullet$}}$}
+\setlist[itemize]{itemsep=-2pt, leftmargin=12pt, topsep=7pt}
+
+% resume starts here
+\begin{document}
+
+% name
+\centerline{\Huge Name LastName1 LastName2}
+
+\vspace{5pt}
+
+% contact information
+\centerline{\href{mailto:mail@gmail.com}{mail@gmail.com} | \href{https://otherlink.com}{otherlink.com}}
+
+
+\vspace{-10pt}
+
+% education section
+\section*{Education}
+% \textbf{School} -- PhD in Aerospace Engineering \hfill June 2010 \\
+% \textbf{School} -- MS in Aerospace Engineering \hfill June 2006 \\
+\textbf{School} -- Major in Area | GPA: X.X/X \hfill Mar 2025
+
+% Additional coursework if necessary
+% \textit{Additional coursework:} Microelectronics, Functional Verification of Integrated Circuits
+\vspace{-12.5pt}
+
+% skills section
+\section*{Skills}
+\textbf{Example:} some1, some2, some3, ...\\
+
+\vspace{-12.5pt}
+
+% experience section
+\section*{Experience}
+\textbf{Experience 1,} {Company} -- Location \hfill Mon Year -- Mon Year \\
+\vspace{-9pt}
+\begin{itemize}
+  \item Description of experience, using CAR, XYZ, STAR methods
+  \item Description of experience, using CAR, XYZ, STAR methods
+  \item Description of experience, using CAR, XYZ, STAR methods
+\end{itemize}
+
+
+\textbf{Experience 2,} {Company} -- Location \hfill Mon Year -- Mon Year \\
+\vspace{-9pt}
+\begin{itemize}
+  \item Description of experience, using CAR, XYZ, STAR methods
+  \item Description of experience, using CAR, XYZ, STAR methods
+  \item Description of experience, using CAR, XYZ, STAR methods
+\end{itemize}
+
+
+% projects section
+% can be replaced by another section given the user's profile
+\section*{Projects}
+
+\textbf{Project1 | Languages, keywords} \hfill \href{https://github.com/}{github.com/link/} \\
+\begin{itemize}
+  \item Description of project, using CAR, XYZ, STAR methods
+  \item Description of project, using CAR, XYZ, STAR methods
+  \item Description of project, using CAR, XYZ, STAR methods
+\end{itemize}
+
+\textbf{Project2 | Languages, keywords} \hfill \href{https://github.com/}{github.com/link/} \\
+\begin{itemize}
+  \item Description of project, using CAR, XYZ, STAR methods
+  \item Description of project, using CAR, XYZ, STAR methods
+  \item Description of project, using CAR, XYZ, STAR methods
+\end{itemize}
+
+% if available
+% \section{Certifications}
+
+\section{Languages}
+\textbf{Spanish:} Native\\
+\textbf{Other:} C1
+
+\end{document}

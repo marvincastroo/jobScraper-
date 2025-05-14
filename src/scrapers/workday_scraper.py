@@ -2,8 +2,9 @@ from selenium import webdriver
 from selenium.webdriver.chrome.service import Service as ChromeService
 from webdriver_manager.chrome import ChromeDriverManager
 from selenium.webdriver.chrome.options import Options as ChromeOptions
-from selenium.webdriver.common.by import By
+from src.core.prompt_manager import get_prompt_template_from_jinja2
 from bs4 import BeautifulSoup
+from src.core.llm import get_model_response
 from src.scrapers.base_scraper import BaseScraper  # Import the base class
 import time
 
@@ -47,43 +48,27 @@ class WorkdayScraper(BaseScraper):
         finally:
             self._close_driver()
 
+
+    def _llm_synthesis(self, content):
+        sys_prompt = get_prompt_template_from_jinja2(prompt_path='../prompts',
+                                                     prompt_name='scrapper.txt')
+        response = get_model_response(system_prompt=sys_prompt,
+                                      user_prompt=content)
+
+
+        return response
     def _parse_content(self, soup):
         """Parses the relevant information from the BeautifulSoup object."""
-        data = {}
 
-        about_role = soup.find('p', style='text-align:left', string="About the Role")
-        # about_role_text = ""
-        if about_role:
-            next_s = about_role.next_sibling
-            if next_s:
-                next_child = next_s.next_element
-                next_child_text = next_child.getText()
-                data["about_role"] = next_child_text
-
-        responsibilities_heading = soup.find('b',  string="Responsibilities")
-        if responsibilities_heading:
-            ul_element = responsibilities_heading.find_parent().next_sibling
-            if ul_element:
-                data["responsibilities"] = ul_element.getText()
-
-        requirements = soup.find('b', string = "About You")
-        if requirements:
-            basic_requirements = requirements.find_parent().next_sibling.next_sibling
-            if basic_requirements:
-                basic_req = basic_requirements.next_sibling
-                if basic_req:
-                    data["requirements"] = basic_req.getText()
-            # other_requirements
+        description_meta_name = soup.find('meta', {'name': 'description'})
+        description_content_name = description_meta_name['content'] if description_meta_name else None
 
 
+        # feed content into LLM to get key values - too lazy and clueless with scraping to do this myself
+        llm_response = self._llm_synthesis(description_content_name)
+        job_summary = llm_response.choices[0].message.content
 
-
-
-
-
-
-
-        return data
+        return job_summary
 
 
 if __name__ == "__main__":
@@ -94,7 +79,7 @@ if __name__ == "__main__":
         print("Extracted data:")
         # print(f"Title: {data.get("Title")}")
         print(data)
-        print(f"Description: {data.get("responsibilities")}")
+        # print(f"Description: {data.get("responsibilities")}")
         # save_data(data, f"data/{platform}_job_{job_urls.index(url)}.json")
     else:
         print(f"Failed to extract data from: {url}")

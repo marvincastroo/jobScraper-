@@ -13,6 +13,7 @@ from src.scrapers.workday_scraper import WorkdayScraper
 from src.core.assess_profile import assess_user
 from src.core.generate_resume import generate_resume
 from src.core.save_results import save_results
+from src.core.sendTelegramMessage import sendTelegramMessage
 from settings import FILTER_JOBS_KEYWORDS, JOB_TYPE_TARGETS, FILTER_COMPANIES
 load_dotenv()
 
@@ -143,6 +144,7 @@ async def main():
             print("Last message:", message.message)
             # job_posting_data = message_regex(message.message)
             job_posting_data = message_regex(test_message)
+            print(job_posting_data)
             entry_already_exists = check_job_in_results(job_posting_data)
 
             if not entry_already_exists:
@@ -162,7 +164,7 @@ async def main():
                              job_company=job_posting_data['company'],
                              resume=generated_cv,
                              user_assessment=user_assessment_result)
-
+                sendTelegramMessage(initial_job_info=job_posting_data)
             else:
                 print("Job is not a good fit. ")
 

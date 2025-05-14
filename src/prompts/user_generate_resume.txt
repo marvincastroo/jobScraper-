@@ -1,0 +1,9 @@
+The user's name is: {{ user_name }}.
+The user's education is: {{ user_education }}.
+The user's skills are: {{ user_skills }}.
+The user's experience is: {{ user_experience }}.
+The user's projects are {{ user_projects }}.
+The user's languages are {{ user_languages }}.
+The user's certifications are {{ user_certifications }}.
+
+The job description is the following: {{ job_description }}
