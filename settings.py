@@ -2,6 +2,9 @@
 USER_NAME = "John Mathew Doe"
 USER_EDUCATION = "Universidad de Costa Rica - BS in Electrical Engineering | GPA: 8.9/10 - Mar 2025 "
 
+JOB_FINDINGS_FILTER = ['strong', 'medium', 'weak']  # Includes all job finding strengths.
+# To filter for only strong matches, set: JOB_FINDINGS_FILTER = ['strong']
+
 USER_DESCRIPTION = """
 Electrical engineer with knowledge in software development: Python, C, C++, Javascript.
 Experienced in machine learning, with libraries like PyTorch and Scikit-Learn.

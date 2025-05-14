@@ -1,7 +1,8 @@
 import os
 import requests
 import re
-
+import asyncio
+import telegram
 from dotenv import load_dotenv
 load_dotenv()
 
@@ -14,7 +15,49 @@ CHAT_ID = 1061543567
 # r = requests.get(url)
 # print(r.json())
 
-def sendTelegramMessage(initial_job_info):
+async def sendTelegramMessage(initial_job_info):
+
+    bot = telegram.Bot(token=TELEGRAM_BOT_API)
+
+    async def send_txt(message):
+        try:
+            await bot.send_message(chat_id=CHAT_ID,
+                                   text=message,
+                                   parse_mode=telegram.constants.ParseMode.MARKDOWN_V2
+                                   )
+            print(f"Message sent to chat: '{message}'")
+            return True
+        except telegram.error.TelegramError as e:
+            print(f"Telegram error sending message: {e}")
+            return False
+        except Exception as e:
+            print(f"An unexpected error occurred: {e}")
+            return False
+    async def send_pdf(pdf_path, caption):
+        try:
+            with open(pdf_path, 'rb') as pdf_file:
+                await bot.send_document(
+                    chat_id=CHAT_ID,
+                    document=pdf_file,
+                    filename=os.path.basename('resume.pdf'),
+                    caption=caption
+                )
+                print(f"PDF '{'resume.pdf'}' sent to chat ")
+                return True
+        except FileNotFoundError:
+            print(f"Error: PDF file '{pdf_path}' not found.")
+            return False
+
+        except telegram.error.TelegramError as e:
+            print(f"Telegram error sending PDF: {e}")
+            return False
+
+        except Exception as e:
+            print(f"An unexpected error occurred: {e}")
+            return False
+
+
+
     comments, pdf, tex = get_results(initial_job_info)
     if comments is None:
         print(f"error: get results returns none")
@@ -25,18 +68,26 @@ def sendTelegramMessage(initial_job_info):
     company = initial_job_info['company']
     link = initial_job_info['link']
 
-    message_string = f'*Title:* {job_title}\n*Company:* {company}\n*Link:* {link}'
-    print(message_string + '\n' + comments_styled)
+    message_string = f'*{job_title}*\n*Company:* {company}\n{link}\n'
+    full_txt = message_string + '\n' + comments_styled
+    escape_chars = ['_', '[', ']', '(', ')', '~', '`', '>', '#', '+', '-', '=', '|', '{', '}', '.', '!']
+    for escapeChar in escape_chars:
+        full_txt = full_txt.replace(escapeChar, f'\\{escapeChar}')
 
-
+    message_sent = await send_txt(full_txt)
+    if message_sent is False:
+        print("error sending message")
+    pdf_sent = await send_pdf(pdf, None)
+    if pdf_sent is False:
+        print("error sending pdf")
 
 def comments_style(comments_string):
 
     string = comments_string.replace("profile_fit", "Profile fit")
-    string = string.replace("education_requirements_met", "Education Requirements")
-    string = string.replace("knowledge_requirements_met", "Technical Requirements")
-    string = string.replace("years_of_experience_met", "YoE Requirements")
-    string = string.replace("summary", "Summary")
+    string = string.replace("education_requirements_met", "*Education Requirements*")
+    string = string.replace("knowledge_requirements_met", "*Technical Requirements*")
+    string = string.replace("years_of_experience_met", "*YoE Requirements*")
+    string = string.replace("summary", "*Summary*")
 
     string = string.replace(': strong', ": \U0001F7E9 Strong")  # green square
     string = string.replace(': medium', ": \U0001F7E8 Medium")  # yellow square
@@ -63,4 +114,4 @@ def get_results(initial_job_info):
 
 if __name__ == "__main__":
     job = {'title':'job_posting', 'company':'ashitionyx', 'link':'https://chatgpt.com/c/6823f840-3340-8000-95f5-b1ae43b95cb0'}
-    sendTelegramMessage(job)
+    asyncio.run(sendTelegramMessage(job))

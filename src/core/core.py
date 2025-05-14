@@ -14,7 +14,7 @@ from src.core.assess_profile import assess_user
 from src.core.generate_resume import generate_resume
 from src.core.save_results import save_results
 from src.core.sendTelegramMessage import sendTelegramMessage
-from settings import FILTER_JOBS_KEYWORDS, JOB_TYPE_TARGETS, FILTER_COMPANIES
+from settings import FILTER_JOBS_KEYWORDS, JOB_TYPE_TARGETS, FILTER_COMPANIES, JOB_FINDINGS_FILTER
 load_dotenv()
 
 TELEGRAM_API_ID = int(os.getenv('app_api_id'))
@@ -35,7 +35,7 @@ def scraper_classifier(job_details):
         return scraper.parse()
 
     else:
-        return "other job website"
+        return None
     return
 
 
@@ -157,14 +157,18 @@ async def main():
 
             if chosen_job:
                 data = scraper_classifier(job_posting_data)
-                user_assessment_result = assess_user(data)
-                print(user_assessment_result)
-                generated_cv = generate_resume(data)
-                save_results(job_title=job_posting_data['title'],
-                             job_company=job_posting_data['company'],
-                             resume=generated_cv,
-                             user_assessment=user_assessment_result)
-                sendTelegramMessage(initial_job_info=job_posting_data)
+                if data is not None:
+                    user_assessment_result = assess_user(data)
+                    print(user_assessment_result)
+                    if user_assessment_result['profile_fit'].lower() in JOB_FINDINGS_FILTER:
+                        generated_cv = generate_resume(data)
+                        save_results(job_title=job_posting_data['title'],
+                                     job_company=job_posting_data['company'],
+                                     resume=generated_cv,
+                                     user_assessment=user_assessment_result)
+                        await sendTelegramMessage(initial_job_info=job_posting_data)
+                else:
+                    print("That website is not supported yet. ")
             else:
                 print("Job is not a good fit. ")
 
@@ -172,4 +176,3 @@ async def main():
 
 with client:
     client.loop.run_until_complete(main())
-
