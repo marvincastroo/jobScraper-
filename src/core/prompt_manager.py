@@ -8,16 +8,13 @@ def get_prompt_template_from_jinja2(
     jinja2_placeholders: dict[str, str]={},
     ) -> str:
     """
-    Carga un .txt como un template de Jinja2, y lo convierte en un LangChain PromptTemplate
-
-    Args:a
-        prompt_path (str): ruta al prompt
-        prompt_name (str): nombre del prompt, incluyendo extensión
-        partial_variables (dict): Diccionario de partial variables cargadas por LangChain
-        jinja2_placeholders (dict): Diccionario de placeholders a ser reemplazados por Jinja2
-        :rtype: object
-
+    Loads a .txt file as a jinja2 template.
+    :param prompt_path: (str) route to prompt directories
+    :param prompt_name: (str) name of the .txt prompt file, including extension
+    :param jinja2_placeholders: (dict[str, _]) placeholder variables to be replaced in the prompt
+    :return: (string) prompt
     """
+
 
     env = Environment(loader=FileSystemLoader(prompt_path, encoding='utf-8'))
     template = env.get_template(prompt_name)

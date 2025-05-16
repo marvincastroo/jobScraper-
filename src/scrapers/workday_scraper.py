@@ -4,7 +4,7 @@ from webdriver_manager.chrome import ChromeDriverManager
 from selenium.webdriver.chrome.options import Options as ChromeOptions
 from src.core.prompt_manager import get_prompt_template_from_jinja2
 from bs4 import BeautifulSoup
-from src.core.llm import get_model_response
+from src.llms.openai import openai_chat_completion
 from src.scrapers.base_scraper import BaseScraper  # Import the base class
 import time
 
@@ -33,13 +33,11 @@ class WorkdayScraper(BaseScraper):
         self._setup_driver()
         try:
             self.driver.get(self.url)
-            time.sleep(5)  # Adjust as needed
-            # LinkedIn often loads more content dynamically, you might need to scroll
-            # or wait for specific elements here.
+            time.sleep(5)
             rendered_html = self.driver.page_source
             soup = BeautifulSoup(rendered_html, 'html.parser')
-            with open("file.html", "w", encoding="utf-8") as f:
-                f.write(soup.prettify())
+            # with open("file.html", "w", encoding="utf-8") as f:
+            #     f.write(soup.prettify())
 
             return self._parse_content(soup)
         except Exception as e:
@@ -48,12 +46,11 @@ class WorkdayScraper(BaseScraper):
         finally:
             self._close_driver()
 
-
     def _llm_synthesis(self, content):
         sys_prompt = get_prompt_template_from_jinja2(prompt_path='../prompts',
                                                      prompt_name='scrapper.txt')
-        response = get_model_response(system_prompt=sys_prompt,
-                                      user_prompt=content)
+        response = openai_chat_completion(system_prompt=sys_prompt,
+                                          user_prompt=content)
 
 
         return response

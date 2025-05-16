@@ -1,7 +1,9 @@
-from settings import (USER_NAME, USER_EDUCATION, USER_SKILLS, USER_EXPERIENCE, USER_PROJECTS, USER_LANGUAGES,
-                      USER_CERTIFICATIONS)
+# from settings import (USER_NAME, USER_EDUCATION, USER_SKILLS, USER_EXPERIENCE, USER_PROJECTS, USER_LANGUAGES,
+#                       USER_CERTIFICATIONS)
+from src.core.unpack_settings import (USER_NAME, USER_EDUCATION, USER_SKILLS, USER_EXPERIENCE, USER_PROJECTS, USER_LANGUAGES,
+                                      USER_CERTIFICATIONS)
 from src.core.prompt_manager import get_prompt_template_from_jinja2
-from src.core.llm import get_model_response
+from src.llms.openai import openai_chat_completion
 
 def generate_resume(job_description):
     with open('../../latex_format.tex', 'r') as file:
@@ -24,7 +26,7 @@ def generate_resume(job_description):
                                                       'user_certifications': USER_CERTIFICATIONS,
                                                       'job_description': job_description})
 
-    response = get_model_response(system_prompt=sys_prompt,
+    response = openai_chat_completion(system_prompt=sys_prompt,
                                   user_prompt=user_prompt)
     response_txt = response.choices[0].message.content
 
